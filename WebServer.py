@@ -3,6 +3,7 @@ from os import fork
 # import socket
 from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR
 from signal import signal, SIGINT
+import time
 
 class WebServer:
     def __init__(self):
@@ -45,17 +46,21 @@ class WebServer:
                         file = open('.' + file_path,'r')
                         response_data = file.read()
                         file.close()
-                        response_header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html; encoding=utf8\nContent-Length: '+str(len(response_data))+'\nConnection: close'
+                        response_header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html; encoding=utf8\nContent-Length: '+str(len(response_data))+'\nConnection: close\n'
                     except Exception as e:
                         print('Execption:', e)
                         response_header = 'HTTP/1.1 404 Not Found\r\n'
                         response_data = "<html><body><center><h1>Error 404: File not found</h1></center></body></html>"
                         
-                        
-                response = response_header.encode() + response_data.encode()
+                time_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+                response_header += 'Date: {now}\n'.format(now=time_now)
+                response_header += 'Server: WebServer\n'
+                response_header += 'Connection: close\n\n'
+                response = response_header + response_data
                 print(response)
                 conn.send(response_header.encode())
                 conn.send(response_data.encode())
+                time.sleep(20)
                 conn.close()
                 # filho sai do programa
                 exit()
